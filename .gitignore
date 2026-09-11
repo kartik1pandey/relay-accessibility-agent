@@ -16,6 +16,15 @@ demo/cards/*.png
 demo/clips/*
 demo/narration_log.txt
 
+# LaTeX build artifacts (submission/) — regenerate via xelatex, keep the
+# .tex source and the compiled .pdf, not the intermediate junk.
+submission/*.aux
+submission/*.log
+submission/*.nav
+submission/*.out
+submission/*.snm
+submission/*.toc
+
 # Secrets — never commit, especially since this repo will be pushed public
 .env
 .env.*

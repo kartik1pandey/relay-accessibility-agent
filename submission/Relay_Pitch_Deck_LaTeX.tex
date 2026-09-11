@@ -1,0 +1,191 @@
+
+\PassOptionsToPackage{table}{xcolor}
+\documentclass[aspectratio=169]{beamer}
+\usepackage{fontspec}
+\setmainfont{Segoe UI}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{tikz}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+
+\definecolor{bg}{HTML}{F5F7F4}
+\definecolor{ink}{HTML}{10151A}
+\definecolor{inksoft}{HTML}{3F4A47}
+\definecolor{accent}{HTML}{1B6B6E}
+\definecolor{accenttext}{HTML}{0B4547}
+\definecolor{linecol}{HTML}{D8DED8}
+\definecolor{darkbg}{HTML}{10151A}
+\definecolor{darkfg}{HTML}{F5F7F4}
+\definecolor{darkmuted}{HTML}{9FB3AC}
+\definecolor{tablehi}{HTML}{EAEFE9}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}{}
+\setbeamercolor{background canvas}{bg=bg}
+\setbeamercolor{normal text}{fg=ink, bg=bg}
+\setbeamerfont{frametitle}{size=\LARGE, series=\bfseries}
+\setbeamercolor{frametitle}{fg=ink, bg=bg}
+\setbeamertemplate{frametitle}{
+  \vspace{6pt}
+  {\color{accenttext}\bfseries\small \MakeUppercase{\insertframetitle}}
+}
+
+\newcommand{\eyebrowtitle}[2]{
+  \vspace{4pt}
+  {\color{accenttext}\bfseries\small \MakeUppercase{#1}}\\[2pt]
+  {\color{linecol}\rule{\textwidth}{0.6pt}}\\[10pt]
+  {\color{ink}\LARGE\bfseries #2}\par\vspace{10pt}
+}
+
+% A tighter variant for content-heavy slides (the 7-step architecture
+% diagram overflowed the frame with the standard spacing above — found by
+% actually compiling and looking at the rendered page, not assumed).
+\newcommand{\eyebrowtitlecompact}[2]{
+  {\color{accenttext}\bfseries\small \MakeUppercase{#1}}\\[1pt]
+  {\color{linecol}\rule{\textwidth}{0.6pt}}\\[6pt]
+  {\color{ink}\Large\bfseries #2}\par\vspace{4pt}
+}
+
+% Beamer's background-canvas color must be set before \begin{frame} to
+% affect that frame; setting it inside the frame body is too late (found
+% by actually compiling: the title slide rendered with a light background
+% and near-invisible light-on-light text). A full-page TikZ overlay
+% painted first thing inside the frame is robust regardless of timing.
+\newcommand{\darkbgrect}{%
+\begin{tikzpicture}[remember picture, overlay]
+\fill[darkbg] (current page.south west) rectangle (current page.north east);
+\end{tikzpicture}%
+}
+
+\begin{document}
+
+\begin{frame}[plain]
+\darkbgrect
+\vspace{2.2cm}
+{\color{darkfg}\fontsize{60}{60}\selectfont\bfseries Relay}\\[14pt]
+{\color{darkmuted}\Large An on-device, voice-controlled, screen-reading accessibility agent}
+\vfill
+{\color{accent}\bfseries Snapdragon AI Lab Build \& Present Challenge}
+\end{frame}
+
+\begin{frame}{}
+\eyebrowtitle{THE PROBLEM}{Point-and-click assumes hands and eyesight most people don't have}
+\vspace{6pt}
+{\color{inksoft}
+\begin{itemize}
+\setlength{\itemsep}{10pt}
+\item People with limited hand mobility or low vision can't reliably operate a Windows PC through a mouse and a screen alone.
+\item Existing screen readers describe a screen; they don't act on it. Existing automation agents act, but weren't built for this population's safety needs.
+\item The gap: a voice-first agent that both understands the screen and acts on it --- with a person narrating every step.
+\end{itemize}
+}
+\end{frame}
+
+\begin{frame}{}
+\eyebrowtitle{THE PRODUCT}{"Open my email and read me the new ones" --- that’s the whole interaction}
+\vspace{6pt}
+{\color{inksoft}
+\begin{itemize}
+\setlength{\itemsep}{10pt}
+\item Voice in, spoken result out. No pointing, no reading required.
+\item Deliberately not a general autonomous computer-use agent --- scoped assistive technology.
+\item A person narrates every step, and nothing consequential happens without a spoken ``yes.'' That's a feature of the design, not a limitation.
+\end{itemize}
+}
+\end{frame}
+
+\begin{frame}{}
+\eyebrowtitlecompact{ARCHITECTURE}{Screen understanding is tree-first, vision-second --- not the other way around}
+\centerline{\color{ink}\footnotesize  Voice command}
+\vspace{-2pt}\centerline{\color{linecol}\footnotesize$\downarrow$}\vspace{-2pt}
+\centerline{\color{ink}\footnotesize  Whisper (speech-to-text)}
+\vspace{-2pt}\centerline{\color{linecol}\footnotesize$\downarrow$}\vspace{-2pt}
+\centerline{\color{ink}\footnotesize  Screen understanding --- UI Automation tree first, vision model on fallback}
+\vspace{-2pt}\centerline{\color{linecol}\footnotesize$\downarrow$}\vspace{-2pt}
+\centerline{\color{ink}\footnotesize  Small local reasoning model decides the next action}
+\vspace{-2pt}\centerline{\color{linecol}\footnotesize$\downarrow$}\vspace{-2pt}
+\centerline{\color{accenttext}\footnotesize \bfseries Guardrail check --- ALLOW / CONFIRM (spoken yes) / BLOCK}
+\vspace{-2pt}\centerline{\color{linecol}\footnotesize$\downarrow$}\vspace{-2pt}
+\centerline{\color{ink}\footnotesize  Action executes against the real UI element}
+\vspace{-2pt}\centerline{\color{linecol}\footnotesize$\downarrow$}\vspace{-2pt}
+\centerline{\color{ink}\footnotesize  MeloTTS speaks the result}
+\end{frame}
+
+\begin{frame}{}
+\eyebrowtitle{THE DIFFERENTIATOR --- VERIFIED AGAINST FOUR REAL COMPARABLE PROJECTS}{Relay is the only one with a deterministic, code-level safety gate}
+\footnotesize
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{@{} >{\raggedright\arraybackslash}p{2.1cm} Y >{\raggedright\arraybackslash}p{3.2cm} @{}}
+\rowcolor{ink} \textbf{\textcolor{darkfg}{Project}} & \textbf{\textcolor{darkfg}{Safety mechanism}} & \textbf{\textcolor{darkfg}{Enforcement}} \\
+Deft & None found anywhere in either backing repo & N/A --- unconditional dispatch \\
+Orbit & None --- but never takes actions at all & N/A \\
+ScreenSaathi & Keyword list downgrades risky plans to guide-only & Code-level, deterministic \\
+Sally & A prompt instruction asking the model nicely & Model-enforced only --- no code backstop \\
+\rowcolor{tablehi} \textbf{Relay} & \textbf{Two-tier ALLOW / CONFIRM / BLOCK + spoken yes + audit log} & \textbf{Code-level, deterministic, pre-execution} \\
+\end{tabularx}
+\renewcommand{\arraystretch}{1}
+\vspace{6pt}
+{\tiny\color{inksoft} Sourced from reading each project's real, public source code --- not a secondhand summary. See COMPETITIVE\_RESEARCH.md.}
+\end{frame}
+
+\begin{frame}{}
+\eyebrowtitle{VERIFIED, NOT CLAIMED}{Every non-NPU piece of the pipeline has been run for real, on this machine}
+\vspace{6pt}
+{\color{inksoft}
+\begin{itemize}
+\setlength{\itemsep}{10pt}
+\item Whisper speech-to-text: real transcription of a known test clip, 3 independent ways.
+\item MeloTTS-EN: real synthesis, real audio, played back through real speakers.
+\item The full agent.py orchestration loop: a real mic recording $\rightarrow$ real transcription $\rightarrow$ real UI Automation tree read $\rightarrow$ real guardrail gate $\rightarrow$ real action $\rightarrow$ real speech, proven end to end against a live window.
+\item Chromium accessibility gap (Edge/Outlook can't be read via UI Automation): found, verified, and fixed for Edge via Chrome DevTools Protocol --- demonstrated live against a real Wikipedia page.
+\item The one honest gap: LocalReasoner itself needs Snapdragon's on-device NPU (GenieX), which this dev machine doesn't have.
+\end{itemize}
+}
+\end{frame}
+
+\begin{frame}{}
+\eyebrowtitle{REAL SNAPDRAGON HARDWARE --- QUALCOMM AI HUB}{Whisper-base, compiled and profiled on a real Snapdragon X Elite}
+\vspace{18pt}
+\centerline{\begin{minipage}[t]{0.48\textwidth}\centering {\color{accenttext}\fontsize{40}{40}\selectfont\bfseries \textasciitilde{}49.1 ms}\\[10pt]{\color{inksoft}\large encoder}\end{minipage} \begin{minipage}[t]{0.48\textwidth}\centering {\color{accenttext}\fontsize{40}{40}\selectfont\bfseries \textasciitilde{}3.7 ms}\\[10pt]{\color{inksoft}\large decoder}\end{minipage}}
+\vspace{22pt}
+\centerline{\begin{minipage}{0.85\textwidth}\centering\color{inksoft} A real compile + profile job on Qualcomm AI Hub's hosted device farm --- not a simulation, and an order of magnitude faster than this laptop's CPU. Precisely scoped: this is AI Hub's compile/profile path, not yet a full GenieX runtime measurement, which needs physical device access.\end{minipage}}
+\end{frame}
+
+\begin{frame}{}
+\eyebrowtitle{TWO SURFACES, TWO AUDIENCES}{The end user in the moment of use, and whoever configures the guardrails}
+\vspace{6pt}
+{\color{inksoft}
+\begin{itemize}
+\setlength{\itemsep}{10pt}
+\item End-user runtime UI: 7 explicit states (listening, transcribing, deciding, confirming, acting, blocked, error) --- WCAG AAA contrast (7:1), verified by computed contrast ratios, not eyeballed.
+\item The confirmation screen is the single highest-stakes moment in the product: distinct shape and color, never color alone, spoken aloud as well as shown.
+\item Guardrail-admin surface: reads guardrails.py's real CONFIRM/BLOCK patterns directly --- can't drift out of sync with a hand-maintained copy.
+\end{itemize}
+}
+\end{frame}
+
+\begin{frame}{}
+\eyebrowtitle{HONEST ROADMAP}{What's real, what's next}
+\vspace{6pt}
+{\color{inksoft}
+\begin{itemize}
+\setlength{\itemsep}{10pt}
+\item Open: Outlook's Chromium accessibility gap --- same limitation as Edge, but it's a desktop app CDP can't attach to. Still unsolved, documented as such.
+\item Open: full GenieX-runtime, on-device latency for the reasoning model --- needs physical Snapdragon hardware, not yet measured.
+\item Done: 18 adversarial guardrail tests across all 3 target apps, a fixed task-list harness (100\% pass rate), and short-term reasoning memory (last 3 turns).
+\item This submission was built without physical Snapdragon hardware --- every claim here is labeled by exactly how it was verified.
+\end{itemize}
+}
+\end{frame}
+
+\begin{frame}[plain]
+\darkbgrect
+\vspace{2.6cm}
+\centerline{\color{darkfg}\fontsize{54}{54}\selectfont\bfseries Thank you}
+\vspace{22pt}
+\centerline{\color{darkmuted}\large github.com/kartik1pandey/relay-accessibility-agent}
+\vspace{6pt}
+\centerline{\color{darkmuted}\large Snapdragon AI Lab Build \& Present Challenge}
+\end{frame}
+
+\end{document}
