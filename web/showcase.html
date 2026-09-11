@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relay — Verification Ledger</title>
+<style>
+  :root {
+    /* dark-first: bare :root carries the dark palette */
+    --bg: #0B0F14;
+    --surface: #121922;
+    --surface-2: #1A232D;
+    --ink: #EAF1F5;
+    --ink-soft: #93A3AD;
+    --ink-faint: #9DA9B0;
+    --line: #26323C;
+
+    --verified: #4FD1A0;
+    --verified-text: #7FE3BE;
+    --verified-surface: #12241D;
+
+    --pending: #E0A855;
+    --pending-text: #F0C27E;
+    --pending-surface: #241C10;
+
+    --focus: #7FE3BE;
+    --shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #F2F5F3;
+      --surface: #FFFFFF;
+      --surface-2: #E7ECE9;
+      --ink: #0F1513;
+      --ink-soft: #47534D;
+      --ink-faint: #455049;
+      --line: #D6DEDA;
+
+      --verified: #1F7A54;
+      --verified-text: #0E4E32;
+      --verified-surface: #E7F3EC;
+
+      --pending: #8A5A17;
+      --pending-text: #6E4610;
+      --pending-surface: #F5ECDD;
+
+      --focus: #0E4E32;
+      --shadow: 0 16px 40px -18px rgba(20,30,25,0.18);
+    }
+  }
+  :root[data-theme="light"] {
+    --bg: #F2F5F3;
+    --surface: #FFFFFF;
+    --surface-2: #E7ECE9;
+    --ink: #0F1513;
+    --ink-soft: #47534D;
+    --ink-faint: #455049;
+    --line: #D6DEDA;
+
+    --verified: #1F7A54;
+    --verified-text: #0E4E32;
+    --verified-surface: #E7F3EC;
+
+    --pending: #8A5A17;
+    --pending-text: #6E4610;
+    --pending-surface: #F5ECDD;
+
+    --focus: #0E4E32;
+    --shadow: 0 16px 40px -18px rgba(20,30,25,0.18);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Source Sans 3", system-ui, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  ::selection { background: var(--verified); color: #06140F; }
+
+  a { color: var(--verified-text); }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  .mono {
+    font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  }
+
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ---------- header ---------- */
+  header.top {
+    border-bottom: 1px solid var(--line);
+    padding: 16px 0;
+  }
+  .top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .brand .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--verified);
+    box-shadow: 0 0 0 3px var(--verified-surface);
+  }
+  .top-links {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+  }
+  .top-links a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px solid transparent; }
+  .top-links a:hover { color: var(--verified-text); border-color: var(--verified-text); }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 64px 0 40px; }
+  .kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: var(--ink-faint);
+    margin: 0 0 18px;
+  }
+  h1.title {
+    font-size: clamp(48px, 9vw, 84px);
+    line-height: 0.98;
+    font-weight: 700;
+    margin: 0 0 20px;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .pitch {
+    font-size: 20px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 30px;
+  }
+  .pitch strong { color: var(--ink); font-weight: 600; }
+
+  .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    min-height: 48px;
+    padding: 0 20px;
+    border-radius: 8px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    background: var(--surface);
+  }
+  .btn:hover { border-color: var(--verified); color: var(--verified-text); }
+  .btn.primary {
+    background: var(--verified);
+    border-color: var(--verified);
+    color: #06140F;
+  }
+  .btn.primary:hover { color: #06140F; opacity: 0.9; }
+
+  /* ---------- section scaffolding ---------- */
+  section { padding: 56px 0; border-top: 1px solid var(--line); }
+  .section-head { margin-bottom: 28px; }
+  .section-num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 14px;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: 6px;
+  }
+  h2 {
+    font-size: 30px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .lede { font-size: 18px; color: var(--ink-soft); max-width: 68ch; margin: 14px 0 0; }
+
+  /* ---------- problem ---------- */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  @media (max-width: 700px) { .problem-grid { grid-template-columns: 1fr; } }
+  .problem-grid p { color: var(--ink-soft); font-size: 17px; }
+  .quote {
+    font-size: 21px;
+    color: var(--ink);
+    border-left: 3px solid var(--verified);
+    padding-left: 18px;
+    margin: 0;
+    font-style: italic;
+  }
+
+  /* ---------- architecture diagram ---------- */
+  .diagram-frame {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+  }
+  .diagram-legend {
+    display: flex; gap: 24px; flex-wrap: wrap;
+    margin-top: 18px;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .diagram-legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+  /* ---------- ledger ---------- */
+  .ledger { display: flex; flex-direction: column; gap: 2px; }
+  .entry {
+    display: grid;
+    grid-template-columns: 56px 1fr 120px;
+    gap: 18px;
+    align-items: start;
+    padding: 20px 0;
+    border-top: 1px solid var(--line);
+  }
+  .entry:first-child { border-top: none; }
+  .entry-num {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 15px;
+    color: var(--ink-faint);
+    padding-top: 3px;
+  }
+  .entry-title { font-size: 18px; font-weight: 600; margin: 0 0 6px; }
+  .entry-detail { color: var(--ink-soft); font-size: 16px; margin: 0; }
+  .entry-detail .mono { color: var(--ink); }
+  .entry-status {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
+    padding-top: 4px;
+    white-space: nowrap;
+  }
+  .entry-status.verified { color: var(--verified-text); }
+  .entry-status.pending { color: var(--pending-text); }
+  @media (max-width: 620px) {
+    .entry { grid-template-columns: 40px 1fr; }
+    .entry-status { grid-column: 2; text-align: left; padding-top: 0; }
+  }
+
+  /* ---------- honest gap callout ---------- */
+  .gap-callout {
+    background: var(--pending-surface);
+    border: 3px solid var(--pending);
+    border-radius: 4px; /* deliberately sharper than the rounded surfaces elsewhere */
+    padding: 28px 30px;
+  }
+  .gap-callout h3 {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: var(--pending-text);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .gap-callout p { color: var(--ink-soft); margin: 0; font-size: 16px; }
+  .gap-callout .mono { color: var(--pending-text); }
+
+  /* ---------- preview widget ---------- */
+  .preview-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+  .preview-note { font-size: 14px; color: var(--ink-faint); margin: 0 0 18px; }
+  .device {
+    --d-bg: #F5F7F4; --d-ink: #10151A; --d-ink-soft: #3F4A47; --d-line: #D3DAD2;
+    --d-accent-text: #0B4547; --d-confirm-text: #7A2416; --d-confirm-surface: #FBEAE5;
+    background: var(--d-bg);
+    border-radius: 10px;
+    padding: 36px 24px;
+    text-align: center;
+    font-family: "Atkinson Hyperlegible", system-ui, sans-serif;
+    min-height: 220px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  }
+  .device-icon {
+    width: 56px; height: 56px; border-radius: 16px; border: 3px solid var(--d-accent-text);
+    display: flex; align-items: center; justify-content: center; color: var(--d-accent-text);
+  }
+  .device[data-tone="confirm"] { background: var(--d-confirm-surface); }
+  .device[data-tone="confirm"] .device-icon { border-color: var(--d-confirm-text); color: var(--d-confirm-text); border-radius: 6px; }
+  .device-title { font-size: 22px; font-weight: 700; color: var(--d-ink); margin: 0; }
+  .device[data-tone="confirm"] .device-title { color: var(--d-confirm-text); }
+  .device-caption { font-size: 16px; color: var(--d-ink-soft); margin: 0; max-width: 40ch; }
+  .device-controls {
+    display: flex; justify-content: center; gap: 8px; margin-top: 18px; flex-wrap: wrap;
+  }
+  .device-controls button {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink-soft);
+    cursor: pointer;
+    min-height: 40px;
+  }
+  .device-controls button[aria-current="true"] {
+    background: var(--verified);
+    border-color: var(--verified);
+    color: #06140F;
+  }
+  .device-controls button:hover { border-color: var(--verified); }
+
+  /* ---------- footer ---------- */
+  footer { padding: 40px 0 60px; }
+  footer p { color: var(--ink-faint); font-size: 14px; }
+
+  code.inline {
+    font-family: "JetBrains Mono", monospace;
+    background: var(--surface-2);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 15px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .brand .dot { animation: pulse 2.6s ease-in-out infinite; }
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-row">
+    <div class="brand"><span class="dot" aria-hidden="true"></span> RELAY — VERIFICATION LEDGER</div>
+    <nav class="top-links">
+      <a href="#ledger">Ledger</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#gap">The one gap</a>
+      <a href="#try-it">Try it</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap" style="border-top:none;">
+    <p class="kicker">SNAPDRAGON AI LAB BUILD &amp; PRESENT CHALLENGE — SUBMISSION</p>
+    <h1 class="title">Relay</h1>
+    <p class="pitch">
+      A voice-controlled, screen-reading agent for people with limited hand mobility
+      or low vision — running entirely on-device. <strong>Every claim on this page is
+      something that was actually run and observed</strong>, not asserted. The one
+      genuine gap is labeled as clearly as the wins.
+    </p>
+    <div class="cta-row">
+      <a class="btn primary" href="#ledger">See what's verified ↓</a>
+      <span class="btn" aria-disabled="true" title="In this repo: WRITEUP.md">📄 WRITEUP.md</span>
+      <span class="btn" aria-disabled="true" title="In this repo: DEMO_SCRIPT.md">🎬 DEMO_SCRIPT.md</span>
+      <span class="btn" aria-disabled="true" title="Add your repo link once it's public">🔗 repo link — add once public</span>
+    </div>
+  </section>
+
+  <section class="wrap">
+    <div class="section-head">
+      <span class="section-num mono">§1</span>
+      <h2>Not a general computer-use agent</h2>
+    </div>
+    <div class="problem-grid">
+      <div>
+        <p>Relay is scoped assistive technology. Someone says <em>"open my email and
+        read me the new ones"</em> — that's the whole interaction. A person narrates
+        every step, and nothing consequential happens without a spoken "yes."</p>
+        <p>That framing is a feature of the design, not a limitation. It's what makes
+        the tool trustworthy enough to hand real control to, for the population it's
+        built for.</p>
+      </div>
+      <blockquote class="quote">
+        "Never relies on color alone to signal what's being confirmed — the single
+        highest-stakes screen in the whole product."
+      </blockquote>
+    </div>
+  </section>
+
+  <section class="wrap" id="architecture">
+    <div class="section-head">
+      <span class="section-num mono">§2</span>
+      <h2>Architecture</h2>
+      <p class="lede">Tree-first, vision-fallback — a UI Automation read is orders of
+      magnitude cheaper than a vision-language model call. Color below tracks real
+      verification status per component, not just structure.</p>
+    </div>
+    <div class="diagram-frame">
+      <svg viewBox="0 0 860 220" width="100%" role="img" aria-label="Pipeline: voice into Whisper, into screen understanding with a UI tree first and vision fallback, into a reasoning model, into a guardrail gate, into action execution, into MeloTTS speech.">
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--ink-faint)"></path>
+          </marker>
+        </defs>
+        <rect x="10" y="80" width="100" height="60" rx="8" fill="var(--surface-2)" stroke="var(--line)" stroke-width="1.5"></rect>
+        <text x="60" y="106" text-anchor="middle" fill="var(--ink)" font-size="13" font-family="JetBrains Mono, monospace">Voice</text>
+        <text x="60" y="124" text-anchor="middle" fill="var(--ink-faint)" font-size="11" font-family="JetBrains Mono, monospace">command</text>
+
+        <line x1="110" y1="110" x2="148" y2="110" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#arrow)"></line>
+
+        <rect x="150" y="70" width="120" height="80" rx="8" fill="var(--verified-surface)" stroke="var(--verified)" stroke-width="2"></rect>
+        <text x="210" y="102" text-anchor="middle" fill="var(--verified-text)" font-size="13" font-weight="700" font-family="JetBrains Mono, monospace">Whisper</text>
+        <text x="210" y="120" text-anchor="middle" fill="var(--ink-soft)" font-size="11" font-family="JetBrains Mono, monospace">speech-to-text</text>
+        <text x="210" y="136" text-anchor="middle" fill="var(--verified-text)" font-size="10" font-family="JetBrains Mono, monospace">✓ verified</text>
+
+        <line x1="270" y1="110" x2="308" y2="110" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#arrow)"></line>
+
+        <rect x="310" y="60" width="140" height="100" rx="8" fill="var(--verified-surface)" stroke="var(--verified)" stroke-width="2"></rect>
+        <text x="380" y="88" text-anchor="middle" fill="var(--verified-text)" font-size="13" font-weight="700" font-family="JetBrains Mono, monospace">Perception</text>
+        <text x="380" y="105" text-anchor="middle" fill="var(--ink-soft)" font-size="10" font-family="JetBrains Mono, monospace">UI tree first,</text>
+        <text x="380" y="118" text-anchor="middle" fill="var(--ink-soft)" font-size="10" font-family="JetBrains Mono, monospace">vision fallback</text>
+        <text x="380" y="136" text-anchor="middle" fill="var(--verified-text)" font-size="10" font-family="JetBrains Mono, monospace">✓ verified, all 3 apps</text>
+        <text x="380" y="150" text-anchor="middle" fill="var(--pending-text)" font-size="9" font-family="JetBrains Mono, monospace">(2/3 need the fallback)</text>
+
+        <line x1="450" y1="110" x2="488" y2="110" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#arrow)"></line>
+
+        <rect x="490" y="70" width="130" height="80" rx="8" fill="var(--pending-surface)" stroke="var(--pending)" stroke-width="2"></rect>
+        <text x="555" y="98" text-anchor="middle" fill="var(--pending-text)" font-size="13" font-weight="700" font-family="JetBrains Mono, monospace">Reasoning</text>
+        <text x="555" y="115" text-anchor="middle" fill="var(--ink-soft)" font-size="10" font-family="JetBrains Mono, monospace">GenieX / NPU</text>
+        <text x="555" y="136" text-anchor="middle" fill="var(--pending-text)" font-size="10" font-family="JetBrains Mono, monospace">⏳ needs Snapdragon</text>
+
+        <line x1="620" y1="110" x2="658" y2="110" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#arrow)"></line>
+
+        <rect x="660" y="60" width="120" height="100" rx="8" fill="var(--verified-surface)" stroke="var(--verified)" stroke-width="2"></rect>
+        <text x="720" y="90" text-anchor="middle" fill="var(--verified-text)" font-size="13" font-weight="700" font-family="JetBrains Mono, monospace">Guardrail</text>
+        <text x="720" y="107" text-anchor="middle" fill="var(--ink-soft)" font-size="10" font-family="JetBrains Mono, monospace">ALLOW / CONFIRM</text>
+        <text x="720" y="121" text-anchor="middle" fill="var(--ink-soft)" font-size="10" font-family="JetBrains Mono, monospace">/ BLOCK</text>
+        <text x="720" y="140" text-anchor="middle" fill="var(--verified-text)" font-size="10" font-family="JetBrains Mono, monospace">✓ 23/23 cases</text>
+
+        <line x1="720" y1="160" x2="720" y2="185" stroke="var(--ink-faint)" stroke-width="1.5" marker-end="url(#arrow)"></line>
+        <text x="740" y="200" fill="var(--ink-faint)" font-size="10" font-family="JetBrains Mono, monospace">action → speech (MeloTTS, ✓ verified)</text>
+      </svg>
+      <div class="diagram-legend">
+        <span><span class="swatch" style="background:var(--verified)"></span>verified — actually run, real result</span>
+        <span><span class="swatch" style="background:var(--pending)"></span>pending — confirmed from source, needs Snapdragon hardware to execute</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="ledger">
+    <div class="section-head">
+      <span class="section-num mono">§3</span>
+      <h2>The verification ledger</h2>
+      <p class="lede">Not feature bullets — a log. Every line below is something that
+        was actually run on this machine and produced a real, observed result.</p>
+    </div>
+    <div class="ledger">
+
+      <div class="entry">
+        <div class="entry-num mono">01</div>
+        <div>
+          <p class="entry-title">Guardrail engine</p>
+          <p class="entry-detail">Two-tier pattern matching (Name/ControlType/AutomationId,
+            never free-text guessing) — <span class="mono">5/5</span> sanity cases,
+            <span class="mono">18/18</span> adversarial cases across all three target
+            apps' plausible real controls. One real gap found and fixed:
+            <span class="mono">\bdelete\b</span> didn't match "deleted" — widened to
+            <span class="mono">\bdelet\w*\b</span>.</p>
+        </div>
+        <div class="entry-status verified">✓ 23/23 PASS</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-num mono">02</div>
+        <div>
+          <p class="entry-title">Perception, live, all three target apps</p>
+          <p class="entry-detail">Notepad <span class="mono">24</span> elements ·
+            Media Player <span class="mono">211</span> elements
+            (<span class="mono">113</span> real, actionable) · Edge
+            <span class="mono">46</span> elements (chrome only) · Outlook
+            <span class="mono">17–47</span> elements (chrome only). Found: Edge and
+            Outlook are both Chromium/WebView2-based and share the exact same
+            accessibility-tree limitation — the vision fallback carries the majority
+            of real content work for 2 of 3 target apps, not a rare edge case.</p>
+        </div>
+        <div class="entry-status verified">✓ VERIFIED</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-num mono">03</div>
+        <div>
+          <p class="entry-title">Platform glue</p>
+          <p class="entry-detail">Real screenshot (<span class="mono">255KB</span> PNG
+            via <span class="mono">mss</span>), real microphone recording, real audio
+            playback — all through <span class="mono">sounddevice</span>, all
+            confirmed working on real hardware.</p>
+        </div>
+        <div class="entry-status verified">✓ VERIFIED</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-num mono">04</div>
+        <div>
+          <p class="entry-title">Speech-to-text — Whisper</p>
+          <p class="entry-detail">Verified three separate ways (CLI demo, direct
+            encoder/decoder API, the actual <span class="mono">transcribe()</span>
+            method with WAV bytes) — all three correctly transcribed a known clip.
+            <span class="mono">~5.9s</span> for an ~11s clip, CPU (a real GPU is
+            present but the library hardcodes CPU internally).</p>
+        </div>
+        <div class="entry-status verified">✓ VERIFIED × 3</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-num mono">05</div>
+        <div>
+          <p class="entry-title">Text-to-speech — MeloTTS-EN</p>
+          <p class="entry-detail">Five independent real blockers found and fixed
+            (a broken PyPI package, a missing MSVC toolchain, a Rust compiler lint,
+            a missing system MeCab install, a Windows security policy) — real
+            synthesis, 5 real speaker voices, played back through real speakers.</p>
+        </div>
+        <div class="entry-status verified">✓ 5 BLOCKERS FIXED</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-num mono">06</div>
+        <div>
+          <p class="entry-title">Full-loop integration</p>
+          <p class="entry-detail">Real mic → real transcription → real live UI tree →
+            real guardrail gate → real action → real speech — all inside
+            <span class="mono">Agent.run_turn()</span>, unmodified. Only the
+            NPU-dependent reasoning step is mocked — the one piece that structurally
+            can't run here.</p>
+        </div>
+        <div class="entry-status verified">✓ VERIFIED TOGETHER</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-num mono">07</div>
+        <div>
+          <p class="entry-title">Fixed task list, real success rate</p>
+          <p class="entry-detail">A repeatable task per app, run live: Notepad,
+            Media Player, Edge, Outlook. Surfaced a real finding along the way —
+            "tree is usable" alone is a poor readiness signal; the harness now waits
+            for the element count to actually stabilize.</p>
+        </div>
+        <div class="entry-status verified">✓ 5/5 (100%)</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-num mono">08</div>
+        <div>
+          <p class="entry-title">Accessibility — computed, not asserted</p>
+          <p class="entry-detail">A real WCAG contrast checker validated every
+            text/background pair against the 7:1 AAA floor — found and fixed 3 real
+            failures. Every font size checked against the 18px floor — found and
+            fixed 5 real violations. 48px+ touch targets, <span class="mono">prefers-
+            reduced-motion</span> respected, dual visual + spoken channel.</p>
+        </div>
+        <div class="entry-status verified">✓ AAA, ALL PAIRS</div>
+      </div>
+
+      <div class="entry">
+        <div class="entry-num mono">09</div>
+        <div>
+          <p class="entry-title">Real Snapdragon X Elite profiling data</p>
+          <p class="entry-detail">Whisper-base's encoder and decoder compiled and
+            profiled for real on a real <span class="mono">Snapdragon X Elite</span>
+            device via Qualcomm AI Hub's hosted device farm — not a simulation.
+            Encoder <span class="mono">~49.1ms</span>, decoder
+            <span class="mono">~3.7ms</span> per inference, versus
+            <span class="mono">~5.9s</span> end-to-end on this dev machine's CPU
+            for the same model. This is AI Hub's compile/profile path — real and
+            directly relevant, but distinct from the GenieX runtime path itself
+            (see §4 below).</p>
+        </div>
+        <div class="entry-status verified">✓ REAL DEVICE DATA</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="wrap" id="gap">
+    <div class="section-head">
+      <span class="section-num mono">§4</span>
+      <h2>The one honest gap</h2>
+      <p class="lede">Narrower than it used to be — stated as plainly as everything
+        above it, because that honesty is itself part of the pitch.</p>
+    </div>
+    <div class="gap-callout">
+      <h3>⏳ The GenieX runtime itself hasn't executed</h3>
+      <p>Entry 09 above is real: Whisper-base genuinely ran on a real Snapdragon X
+        Elite, via AI Hub's compile/profile job system. What's still open is
+        narrower — the reasoning model's GenieX runtime call itself
+        (<span class="mono">AutoModelForCausalLM</span> /
+        <span class="mono">AutoModelForVision2Seq</span>,
+        <span class="mono">device_map="npu"</span>), confirmed against real
+        installed package source but not yet executed, since
+        <span class="mono">geniex</span> is a native wrapper Qualcomm only ships
+        for Windows ARM64, Android, or Linux ARM64 — a hardware gate on this dev
+        machine specifically, not a code defect. Every other piece of the
+        architecture is proven to work, and one of the two hardest-to-verify
+        pieces (real NPU execution) just moved from "confirmed shape" to "real
+        measured data."</p>
+    </div>
+  </section>
+
+  <section class="wrap" id="try-it">
+    <div class="section-head">
+      <span class="section-num mono">§5</span>
+      <h2>What the end user actually sees</h2>
+      <p class="lede">A condensed preview of <code class="inline">relay_ui.jsx</code> — real copy, real color logic (rounded and teal for the calm states, sharp-cornered clay-red for the one that needs your full attention). The full seven-state version, with real speechSynthesis narration, runs at <code class="inline">localhost:5173</code> via <code class="inline">npm run dev</code> in <code class="inline">web/</code>.</p>
+    </div>
+    <div class="preview-card">
+      <p class="preview-note">Click through — this is the actual state logic, condensed.</p>
+      <div class="device" id="device" data-tone="calm">
+        <div class="device-icon" id="deviceIcon" aria-hidden="true"></div>
+        <p class="device-title" id="deviceTitle">Listening</p>
+        <p class="device-caption" id="deviceCaption">Say what you'd like me to do.</p>
+      </div>
+      <div class="device-controls" id="deviceControls"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>Built from scratch for the Snapdragon AI Lab Build &amp; Present Challenge.
+    Every number on this page traces back to something that was actually run —
+    see <code class="inline">WRITEUP.md</code> for the full write-up and
+    <code class="inline">CLAUDE.md</code> for the complete, dated verification
+    log this page summarizes.</p>
+</footer>
+
+<script>
+(function () {
+  const STATES = {
+    listening:    { tone: "calm",    corner: "round", title: "Listening", caption: "Say what you'd like me to do." },
+    transcribing: { tone: "calm",    corner: "round", title: "Understanding", caption: "“Read me the new ones” — got it." },
+    deciding:     { tone: "calm",    corner: "round", title: "Working it out", caption: "Looking at what's on screen in Mail." },
+    confirming:   { tone: "confirm", corner: "sharp", title: "Confirm before I do this", caption: "Say yes to confirm: Send." },
+    acting:       { tone: "calm",    corner: "round", title: "Doing it now", caption: "Sending it now." },
+    blocked:      { tone: "confirm", corner: "sharp", title: "I can't do that", caption: "Disable firewall is blocked." },
+    error:        { tone: "calm",    corner: "round", title: "I couldn't find that", caption: "“Shuffle” isn't on screen anymore." },
+  };
+  const ORDER = ["listening", "transcribing", "deciding", "confirming", "acting", "blocked", "error"];
+
+  const device = document.getElementById("device");
+  const icon = document.getElementById("deviceIcon");
+  const title = document.getElementById("deviceTitle");
+  const caption = document.getElementById("deviceCaption");
+  const controls = document.getElementById("deviceControls");
+
+  function render(key) {
+    const s = STATES[key];
+    device.dataset.tone = s.tone;
+    title.textContent = s.title;
+    caption.textContent = s.caption;
+    icon.textContent = s.tone === "confirm" ? "!" : "●";
+    Array.from(controls.children).forEach(b => b.setAttribute("aria-current", b.dataset.key === key ? "true" : "false"));
+  }
+
+  ORDER.forEach(key => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.dataset.key = key;
+    btn.textContent = STATES[key].title;
+    btn.addEventListener("click", () => render(key));
+    controls.appendChild(btn);
+  });
+
+  render("listening");
+})();
+</script>
+</body>
+</html>

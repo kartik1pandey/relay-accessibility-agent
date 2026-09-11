@@ -1,0 +1,22 @@
+# Node (web/ — Vite dev server for relay_ui.jsx / relay_admin_ui.jsx)
+node_modules/
+
+# Python (agent/)
+__pycache__/
+*.pyc
+
+# Runtime output — regenerate, don't commit
+agent/guardrail_audit.jsonl
+
+# Demo video assets — large, regenerable via demo/generate_narration.py,
+# demo/make_title_cards.py, and the two demo_integration_*.py recordings.
+# The scripts are the source of truth; don't commit their outputs.
+demo/narration/*.wav
+demo/cards/*.png
+demo/clips/*
+demo/narration_log.txt
+
+# Secrets — never commit, especially since this repo will be pushed public
+.env
+.env.*
+*.env

@@ -1,0 +1,72 @@
+# Core — on-device model runtime
+qai-hub-models
+# geniex==0.6.1 confirmed on PyPI — but it only *builds* on Windows ARM64,
+# Android, or Linux ARM64 (native ctypes wrapper, not a missing credential).
+# Won't install on this x64 dev machine; see models.py's module docstring.
+geniex
+
+# Perception (Windows only) — verified 2026-09-10: read_ui_tree and act_on
+# both run for real against a live window (Notepad) on this machine.
+uiautomation
+
+# Platform glue — verified 2026-09-10: agent.py's _capture_screenshot,
+# _record_short_clip, and _play_audio all ran for real on this machine
+# (screenshot to PNG, mic capture, and speaker playback all succeeded).
+sounddevice     # audio capture/playback
+mss             # screenshot capture, for the vision-fallback path
+numpy           # PCM <-> WAV bytes conversion in agent.py
+
+# Speech-to-text — verified 2026-09-10: models.py's SpeechToText actually
+# runs on this machine's CPU (qai-hub-models is already pinned above).
+# NOTE: qai_hub_models' own pinned torch/torchvision versions can conflict
+# with a CUDA-enabled torch you already have (they did, twice, on this
+# machine) — install in a dedicated venv, not your global Python, and see
+# models.py's SpeechToText docstring for the exact fix if torchvision ends
+# up ABI-incompatible with your torch build (uninstalling torchvision is
+# harmless for the STT path; it's only needed for qai_hub_models' vision
+# models).
+transformers==4.56.2
+scipy>=1.8.1,<=1.17.1
+audio2numpy==0.1.2
+jiwer==3.0.3
+
+# Text-to-speech — MeloTTS-EN, verified 2026-09-10: real synthesis, real
+# audio, played back through real speakers. Runs in a SEPARATE, isolated
+# venv (not this requirements.txt / not the main agent env) because its
+# dependency chain (transformers==4.27.4, tokenizers==0.13.3) directly
+# conflicts with the transformers==4.56.2 pinned above for Whisper.
+# `models.py`'s TextToSpeech talks to that isolated venv over a
+# subprocess (agent/melo_worker.py) instead of importing melo here.
+#
+# To set up that isolated venv from scratch (see models.py's
+# TextToSpeech docstring for exactly why each of these is needed):
+#   python -m venv melo_isolated_venv
+#   melo_isolated_venv\Scripts\pip install --no-deps \
+#     "git+https://github.com/myshell-ai/MeloTTS.git"
+#   melo_isolated_venv\Scripts\pip install "setuptools<81" torch torchaudio \
+#     librosa==0.9.1 soundfile transformers==4.27.4 tokenizers==0.13.3 \
+#     mecab-python3==1.0.12 cached_path==1.8.10 num2words==0.5.12 \
+#     unidic_lite==1.0.8 unidic==1.1.0 pykakasi==2.2.1 g2p_en==2.1.0 \
+#     anyascii==0.3.2 jamo==0.4.1 pydub==0.25.1 eng_to_ipa==0.0.2 \
+#     inflect==7.0.0 unidecode==1.3.7 pypinyin==0.50.0 cn2an==0.5.22 \
+#     jieba==0.42.1 langid==1.1.6 txtsplit==1.0.0 "gruut[de,es,fr]==2.4.0" \
+#     fugashi==1.3.0
+#     # (tokenizers needs RUSTFLAGS="--cap-lints warn" set, MSVC Build
+#     # Tools installed, and fugashi needs real MeCab's headers/lib
+#     # copied to C:\mecab by hand — see the docstring)
+#   melo_isolated_venv\Scripts\python -m unidic download
+#   melo_isolated_venv\Scripts\python -c "import nltk; nltk.download('averaged_perceptron_tagger_eng')"
+# Then point MELO_VENV_PYTHON (env var, or models.TextToSpeech's
+# venv_python argument) at that venv's python.exe.
+
+# Chromium DOM access for Edge — verified 2026-09-10: real page content
+# (headings, links, a real search input) read via CDP, a real value typed
+# and confirmed to stick, from a live Wikipedia page. This is the real fix
+# for the documented Edge/Outlook accessibility-tree gap (see CLAUDE.md and
+# cdp_perception.py's module docstring) — surfaced from competitive
+# research (COMPETITIVE_RESEARCH.md). Requires launching Edge with BOTH
+# `--remote-debugging-port=9222 --remote-allow-origins=*` (the second flag
+# is real and non-optional — recent Chromium rejects the CDP websocket
+# without it).
+requests
+websocket-client

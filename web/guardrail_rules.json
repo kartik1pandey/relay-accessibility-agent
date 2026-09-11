@@ -1,0 +1,161 @@
+{
+  "confirm": [
+    {
+      "pattern": "\\bsend\\b",
+      "phrase": "send",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bsubmit\\b",
+      "phrase": "submit",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bpost\\b",
+      "phrase": "post",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bpublish\\b",
+      "phrase": "publish",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\breply all\\b",
+      "phrase": "reply all",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bpay\\b",
+      "phrase": "pay",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bbuy\\b",
+      "phrase": "buy",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bpurchase\\b",
+      "phrase": "purchase",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bcheckout\\b",
+      "phrase": "checkout",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\btransfer\\b",
+      "phrase": "transfer",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bdonate\\b",
+      "phrase": "donate",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bdelet\\w*\\b",
+      "phrase": "delet*",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bremov\\w*\\b",
+      "phrase": "remov*",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bempty trash\\b",
+      "phrase": "empty trash",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\beras\\w*\\b",
+      "phrase": "eras*",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bunsubscribe\\b",
+      "phrase": "unsubscribe",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bchange password\\b",
+      "phrase": "change password",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bdelete account\\b",
+      "phrase": "delete account",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bsign out\\b",
+      "phrase": "sign out",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\brevoke\\b",
+      "phrase": "revoke",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bdisable\\b",
+      "phrase": "disable",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\border\\b",
+      "phrase": "order",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bbook\\b",
+      "phrase": "book",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bcall\\b",
+      "phrase": "call",
+      "tier": "confirm"
+    },
+    {
+      "pattern": "\\bwithdraw\\b",
+      "phrase": "withdraw",
+      "tier": "confirm"
+    }
+  ],
+  "block": [
+    {
+      "pattern": "\\bfactory reset\\b",
+      "phrase": "factory reset",
+      "tier": "block"
+    },
+    {
+      "pattern": "\\breformat\\b",
+      "phrase": "reformat",
+      "tier": "block"
+    },
+    {
+      "pattern": "\\bwipe device\\b",
+      "phrase": "wipe device",
+      "tier": "block"
+    },
+    {
+      "pattern": "\\buninstall windows\\b",
+      "phrase": "uninstall windows",
+      "tier": "block"
+    },
+    {
+      "pattern": "\\bdisable firewall\\b",
+      "phrase": "disable firewall",
+      "tier": "block"
+    },
+    {
+      "pattern": "\\bdisable antivirus\\b",
+      "phrase": "disable antivirus",
+      "tier": "block"
+    }
+  ]
+}
